@@ -30,6 +30,36 @@ import souther.runtime.Result;
 Editing a `.sou` re-runs the compile. Nothing edited is up to date. The build works with the
 configuration cache.
 
+## Importing another project's model
+
+A dependency is all it takes. The module another project compiled is read from its classes, so
+nothing has to be configured and no `.sou` is shared:
+
+```kotlin
+dependencies { implementation(project(":money")) }
+```
+
+```text
+module app.orders exposing ( Order )
+
+import shared.money ( Amount )
+
+data Order = { total: Amount }
+```
+
+## Kotlin
+
+Kotlin compiles against the model with no source set of its own. One thing is worth knowing: Kotlin
+has no JVM target 25 yet and falls back to 24, while `javac` defaults to the JDK it is running on,
+and Gradle refuses the two being different. Say what you target:
+
+```kotlin
+java {
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
+}
+```
+
 ## Choosing a Souther
 
 A plugin release is verified against one Souther, and that is what a project naming no version gets.

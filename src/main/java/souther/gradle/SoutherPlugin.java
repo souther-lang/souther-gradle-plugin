@@ -3,13 +3,14 @@ package souther.gradle;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
 
-import java.util.Map;
 
 /**
  * Everything a project needs to compile Souther, so that its build script says only that it does.
@@ -62,10 +63,13 @@ public class SoutherPlugin implements Plugin<Project> {
                             project.getLayout().getBuildDirectory().dir("classes/souther/main"));
                 });
 
-        // Part of the main source set's output, which is what puts the generated classes into the
-        // jar and onto the test compile class path without a project having to arrange either.
-        main.getOutput().dir(Map.of("builtBy", compile),
-                compile.flatMap(SoutherCompile::getOutputDirectory));
+        // Among the source set's class directories, which is what puts the generated classes into
+        // the jar and onto the test compile class path without a project having to arrange either.
+        // Class directories rather than the output's plain directories: a project depending on this
+        // one is offered the classes rather than the jar, and that offer is made out of these. Added
+        // as an output directory only, a library's own consumers could not see its model.
+        ((ConfigurableFileCollection) main.getOutput().getClassesDirs())
+                .from(compile.flatMap(SoutherCompile::getOutputDirectory));
 
         // And on the compile class path of the source set they belong to, so Java or Kotlin written
         // beside the model can name it. The annotation processor gave a project that for nothing —
@@ -78,7 +82,14 @@ public class SoutherPlugin implements Plugin<Project> {
         // The generated code calls the runtime, so a project depends on it whether or not it says
         // so. Which version is not something a project should have to know: it is the one belonging
         // to the Souther that compiled the model.
-        project.getDependencies().addProvider(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-                souther.getSoutherVersion().map(it -> "org.souther-lang:souther-runtime:" + it));
+        Provider<String> runtime = souther.getSoutherVersion()
+                .map(it -> "org.souther-lang:souther-runtime:" + it);
+        project.getDependencies().addProvider(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, runtime);
+        // And on the API of a library, because a generated type names the runtime in its own
+        // signatures: a project consuming this one cannot say what a behavior returns without it.
+        // Also on implementation above, which java-library extends from it — one artifact, said
+        // where a consumer can see it.
+        project.getPluginManager().withPlugin("java-library", applied ->
+                project.getDependencies().addProvider(JavaPlugin.API_CONFIGURATION_NAME, runtime));
     }
 }

@@ -1,5 +1,8 @@
 plugins {
     `java-gradle-plugin`
+    // For `./gradlew publishPlugins`, which is how a Gradle plugin reaches the projects that
+    // declare it by id.
+    id("com.gradle.plugin-publish") version "1.3.1"
 }
 
 group = "org.souther-lang"
@@ -42,12 +45,17 @@ tasks.processResources {
 }
 
 gradlePlugin {
+    website = "https://github.com/souther-lang/souther-gradle-plugin"
+    vcsUrl = "https://github.com/souther-lang/souther-gradle-plugin.git"
     plugins {
         create("souther") {
             id = "org.souther-lang.souther"
             implementationClass = "souther.gradle.SoutherPlugin"
             displayName = "Souther"
-            description = "Compiles Souther sources in a Gradle build."
+            description = "Compiles Souther sources in a Gradle build. The compiler is not " +
+                    "linked: the Souther version the project names is resolved and run in " +
+                    "isolation, so this plugin and the Souther it runs are released separately."
+            tags = listOf("souther", "jvm", "domain-model", "code-generation")
         }
     }
 }
