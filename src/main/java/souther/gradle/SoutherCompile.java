@@ -51,6 +51,13 @@ public abstract class SoutherCompile extends DefaultTask {
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
+    /**
+     * What the compile keeps between runs: the record of what it generated, which is how a class it
+     * no longer generates is taken back out. An output of this task, so a clean takes it too.
+     */
+    @OutputDirectory
+    public abstract DirectoryProperty getStateDirectory();
+
     @Input
     @Optional
     public abstract Property<String> getLanguage();
@@ -75,6 +82,7 @@ public abstract class SoutherCompile extends DefaultTask {
             parameters.getSourceDirectory().set(getSourceDirectory());
             parameters.getClassPath().from(dependencies);
             parameters.getOutputDirectory().set(getOutputDirectory());
+            parameters.getStateDirectory().set(getStateDirectory());
             parameters.getLanguage().set(getLanguage());
         });
     }

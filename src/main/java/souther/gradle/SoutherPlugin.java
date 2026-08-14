@@ -61,6 +61,8 @@ public class SoutherPlugin implements Plugin<Project> {
                     task.getLanguage().set(souther.getLanguage());
                     task.getOutputDirectory().set(
                             project.getLayout().getBuildDirectory().dir("classes/souther/main"));
+                    task.getStateDirectory().set(
+                            project.getLayout().getBuildDirectory().dir("tmp/compileSouther"));
                 });
 
         // Among the source set's class directories, which is what puts the generated classes into

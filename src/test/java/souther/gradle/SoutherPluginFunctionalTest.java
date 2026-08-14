@@ -13,6 +13,7 @@ import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -113,6 +114,32 @@ class SoutherPluginFunctionalTest {
         BuildResult again = gradle(dir, "jar", "--configuration-cache").build();
 
         assertTrue(again.getOutput().contains("Reusing configuration cache"), again.getOutput());
+    }
+
+    /**
+     * Renaming a module takes the old name out of the jar, {@code $Module} included — that is what
+     * another project imports it by, so leaving it would let a build downstream go on importing a
+     * module that is no longer written anywhere. A task's output directory is not emptied between
+     * runs, so this is the compile's to take back.
+     */
+    @Test
+    void aRenamedModuleLeavesNothingOfTheOldNameInTheJar(@TempDir Path dir) throws IOException {
+        project(dir);
+        gradle(dir, "jar").build();
+
+        Files.writeString(dir.resolve("src/main/souther/money.sou"), """
+                module shared.wallet exposing ( Amount )
+
+                data Amount = Int
+                    invariant value >= 0
+                """);
+        gradle(dir, "jar").build();
+
+        try (ZipFile jar = new ZipFile(dir.resolve("build/libs/sou-only.jar").toFile())) {
+            assertNotNull(jar.getEntry("shared/wallet/$Module.class"));
+            assertNull(jar.getEntry("shared/money/$Module.class"));
+            assertNull(jar.getEntry("shared/money/Amount.class"));
+        }
     }
 
     /** Nothing edited is nothing to do, or every build recompiles every model in the project. */

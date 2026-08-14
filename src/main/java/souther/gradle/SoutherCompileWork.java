@@ -40,6 +40,8 @@ public abstract class SoutherCompileWork implements WorkAction<SoutherCompileWor
 
         DirectoryProperty getOutputDirectory();
 
+        DirectoryProperty getStateDirectory();
+
         Property<String> getLanguage();
     }
 
@@ -56,6 +58,7 @@ public abstract class SoutherCompileWork implements WorkAction<SoutherCompileWor
                 List.of(getParameters().getSourceDirectory().get().getAsFile().toPath()),
                 classPath,
                 getParameters().getOutputDirectory().get().getAsFile().toPath(),
+                getParameters().getStateDirectory().get().getAsFile().toPath(),
                 getParameters().getLanguage().getOrNull()));
         report(result);
     }
