@@ -9,6 +9,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -151,6 +152,28 @@ class SoutherPluginFunctionalTest {
         BuildResult again = gradle(dir, "jar").build();
 
         assertEquals(TaskOutcome.UP_TO_DATE, again.task(":compileSouther").getOutcome());
+    }
+
+    /**
+     * A library that publishes its sources publishes the model they were generated from. The .sou
+     * belong to no source set unless this plugin puts them in one, and a sources jar is built out
+     * of a source set.
+     */
+    @Test
+    void aSourcesJarCarriesTheModel(@TempDir Path dir) throws IOException {
+        project(dir);
+        Files.writeString(dir.resolve("build.gradle.kts"), """
+
+                java {
+                    withSourcesJar()
+                }
+                """, StandardOpenOption.APPEND);
+
+        gradle(dir, "sourcesJar").build();
+
+        try (ZipFile jar = new ZipFile(dir.resolve("build/libs/sou-only-sources.jar").toFile())) {
+            assertNotNull(jar.getEntry("money.sou"), "the model the generated classes came from");
+        }
     }
 
     /** A project with only a plugin declaration and a {@code .sou}. */

@@ -5,6 +5,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
@@ -43,13 +44,21 @@ public class SoutherPlugin implements Plugin<Project> {
                             + souther.getSoutherVersion().get())));
         });
 
-        // The model this project has, if any. What compileSouther compiles, and what decides
-        // whether this project depends on Souther at all.
-        FileCollection sources = project.fileTree(souther.getSourceDirectory(),
-                tree -> tree.include("**/*.sou"));
-
         SourceSet main = project.getExtensions().getByType(SourceSetContainer.class)
                 .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+
+        // The model this project has, if any. What compileSouther compiles, and what decides
+        // whether this project depends on Souther at all.
+        //
+        // Registered on the source set rather than read as a file tree of its own, so that a
+        // sources jar carries the .sou its model was generated from and an IDE opens the directory
+        // as one holding sources. Groovy and Kotlin register theirs for the same reason.
+        SourceDirectorySet sources = project.getObjects()
+                .sourceDirectorySet("souther", "Souther sources");
+        sources.srcDir(souther.getSourceDirectory());
+        sources.getFilter().include("**/*.sou");
+        main.getExtensions().add(SourceDirectorySet.class, "souther", sources);
+        main.getAllSource().source(sources);
         // Held before the generated classes are added to it below. A task is configured lazily, so
         // reading the source set's class path from inside the block below would read the one this
         // task contributes to, and the task would depend on itself.
