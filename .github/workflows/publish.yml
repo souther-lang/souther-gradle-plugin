@@ -1,0 +1,40 @@
+name: Publish
+
+# A version that reaches the Plugin Portal cannot be replaced, so this runs only when asked for,
+# and only after the tests it would publish have passed.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The build declares no toolchain: it compiles with `options.release = 17` on whatever JDK
+      # Gradle is running. 25 is the one the tests were verified against.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      # The functional tests resolve the released Souther from Maven Central, the same way a project
+      # that applies this plugin does. Nothing is published if they fail.
+      - run: ./gradlew test
+
+      - name: Validate against the Portal
+        run: ./gradlew publishPlugins --validate-only
+        env:
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+
+      - name: Publish
+        run: ./gradlew publishPlugins
+        env:
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}

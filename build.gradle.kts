@@ -2,11 +2,11 @@ plugins {
     `java-gradle-plugin`
     // For `./gradlew publishPlugins`, which is how a Gradle plugin reaches the projects that
     // declare it by id.
-    id("com.gradle.plugin-publish") version "1.3.1"
+    id("com.gradle.plugin-publish") version "2.1.1"
 }
 
 group = "org.souther-lang"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.0"
 
 // The Souther this plugin release is verified against: what a project that names no version gets,
 // and what the tests load. One property, so a default nothing was tested against cannot happen.
