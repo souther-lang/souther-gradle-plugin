@@ -39,7 +39,7 @@ class KotlinBesideTheModelTest {
                 repositories {
                     mavenCentral()
                     mavenLocal()
-                    maven { url = uri("%s") }
+                    %s
                 }
 
                 // Kotlin has no JVM target 25 yet and falls back to 24, which Gradle then refuses
@@ -49,7 +49,7 @@ class KotlinBesideTheModelTest {
                     sourceCompatibility = JavaVersion.VERSION_24
                     targetCompatibility = JavaVersion.VERSION_24
                 }
-                """.formatted(southerRepository()));
+                """.formatted(extraRepository()));
         Path model = Files.createDirectories(dir.resolve("src/main/souther"));
         Files.writeString(model.resolve("money.sou"), """
                 module shared.money exposing ( Amount )
@@ -83,11 +83,13 @@ class KotlinBesideTheModelTest {
         }
     }
 
-    private static String southerRepository() {
+    /**
+     * A repository to read Souther from besides the released one, for a Souther built from source.
+     * Empty unless -PsoutherRepo=<path> is passed, so the default run resolves the released Souther
+     * the same way a project that applies this plugin does.
+     */
+    private static String extraRepository() {
         String repository = System.getProperty("souther.repo");
-        if (repository == null) {
-            throw new IllegalStateException("-PsoutherRepo=<path> is what these tests build against");
-        }
-        return repository;
+        return repository == null ? "" : "maven { url = uri(\"" + repository + "\") }";
     }
 }

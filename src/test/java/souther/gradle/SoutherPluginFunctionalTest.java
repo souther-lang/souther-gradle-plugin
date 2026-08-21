@@ -167,9 +167,9 @@ class SoutherPluginFunctionalTest {
                 repositories {
                     mavenCentral()
                     mavenLocal()
-                    maven { url = uri("%s") }
+                    %s
                 }
-                """.formatted(southerRepository()));
+                """.formatted(extraRepository()));
         Path sources = Files.createDirectories(dir.resolve("src/main/souther"));
         Files.writeString(sources.resolve("money.sou"), """
                 module shared.money exposing ( Amount )
@@ -186,14 +186,13 @@ class SoutherPluginFunctionalTest {
                 .withArguments(arguments);
     }
 
-    /** Where a Souther built from source is, handed in by this project's own build. */
-    private static String southerRepository() {
+    /**
+     * A repository to read Souther from besides the released one, for a Souther built from source.
+     * Empty unless -PsoutherRepo=<path> is passed, so the default run resolves the released Souther
+     * the same way a project that applies this plugin does.
+     */
+    private static String extraRepository() {
         String repository = System.getProperty("souther.repo");
-        if (repository == null) {
-            throw new IllegalStateException(
-                    "-PsoutherRepo=<path to a repository holding souther-build-driver> is what "
-                            + "these tests compile against");
-        }
-        return repository;
+        return repository == null ? "" : "maven { url = uri(\"" + repository + "\") }";
     }
 }

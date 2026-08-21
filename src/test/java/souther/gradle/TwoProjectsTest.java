@@ -97,10 +97,10 @@ class TwoProjectsTest {
                     repositories {
                         mavenCentral()
                         mavenLocal()
-                        maven { url = uri("%s") }
+                        %s
                     }
                 }
-                """.formatted(southerRepository()));
+                """.formatted(extraRepository()));
 
         Files.createDirectories(dir.resolve("money/src/main/souther"));
         Files.writeString(dir.resolve("money/build.gradle.kts"), """
@@ -124,11 +124,13 @@ class TwoProjectsTest {
                 .withArguments(arguments);
     }
 
-    private static String southerRepository() {
+    /**
+     * A repository to read Souther from besides the released one, for a Souther built from source.
+     * Empty unless -PsoutherRepo=<path> is passed, so the default run resolves the released Souther
+     * the same way a project that applies this plugin does.
+     */
+    private static String extraRepository() {
         String repository = System.getProperty("souther.repo");
-        if (repository == null) {
-            throw new IllegalStateException("-PsoutherRepo=<path> is what these tests build against");
-        }
-        return repository;
+        return repository == null ? "" : "maven { url = uri(\"" + repository + "\") }";
     }
 }

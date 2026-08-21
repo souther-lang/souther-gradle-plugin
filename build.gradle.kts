@@ -10,7 +10,7 @@ version = "0.1.0-SNAPSHOT"
 
 // The Souther this plugin release is verified against: what a project that names no version gets,
 // and what the tests load. One property, so a default nothing was tested against cannot happen.
-val southerDefaultVersion = "0.1.0-SNAPSHOT"
+val southerDefaultVersion = "0.1.0-rc5"
 
 repositories {
     mavenCentral()
@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.souther-lang:souther-build-api:1.0.0")
+    implementation("org.souther-lang:souther-build-api:1.1.0")
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
