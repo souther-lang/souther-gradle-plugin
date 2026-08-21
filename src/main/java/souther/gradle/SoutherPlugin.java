@@ -61,8 +61,12 @@ public class SoutherPlugin implements Plugin<Project> {
                     task.getLanguage().set(souther.getLanguage());
                     task.getOutputDirectory().set(
                             project.getLayout().getBuildDirectory().dir("classes/souther/main"));
+                    // Not build/tmp/compileSouther: that is what Task.getTemporaryDir() hands out
+                    // for a task of this name, and Gradle promises nothing about what stays there.
+                    // This has to survive between runs, and anything else writing into a declared
+                    // output directory leaves the task out of date every build.
                     task.getStateDirectory().set(
-                            project.getLayout().getBuildDirectory().dir("tmp/compileSouther"));
+                            project.getLayout().getBuildDirectory().dir("souther/state/main"));
                 });
 
         // Among the source set's class directories, which is what puts the generated classes into

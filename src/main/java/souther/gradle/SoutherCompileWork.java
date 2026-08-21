@@ -79,9 +79,13 @@ public abstract class SoutherCompileWork implements WorkAction<SoutherCompileWor
             }
         }
         if (!result.succeeded()) {
-            throw new GradleException(errors == 1
-                    ? "Souther reported 1 error."
-                    : "Souther reported " + errors + " errors.");
+            throw new GradleException(switch (errors) {
+                // A failure that named no error of its own. Saying "0 errors" would read as nothing
+                // having gone wrong.
+                case 0 -> "Souther failed without reporting an error.";
+                case 1 -> "Souther reported 1 error.";
+                default -> "Souther reported " + errors + " errors.";
+            });
         }
     }
 }

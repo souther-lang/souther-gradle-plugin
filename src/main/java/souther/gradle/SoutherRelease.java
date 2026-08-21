@@ -29,6 +29,13 @@ final class SoutherRelease {
         } catch (IOException e) {
             throw new UncheckedIOException("unreadable " + RESOURCE, e);
         }
-        return properties.getProperty("souther.version", "");
+        String version = properties.getProperty("souther.version");
+        if (version == null || version.isBlank()) {
+            // Not a default: an empty version reaches resolution as
+            // org.souther-lang:souther-build-driver: and fails somewhere that says nothing about
+            // where it came from.
+            throw new IllegalStateException(RESOURCE + " names no souther.version");
+        }
+        return version;
     }
 }

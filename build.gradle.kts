@@ -62,8 +62,8 @@ gradlePlugin {
 
 tasks.test {
     useJUnitPlatform()
-    // The tests build a real project against a real Souther. What version, and where it is, said
-    // once here rather than in each generated build script.
-    systemProperty("souther.default.version", southerDefaultVersion)
+    // The tests build a real project against a real Souther, and the version they get is the one
+    // written into the artifact above — the generated build scripts name none, which is the whole
+    // point of them. What is left to say is where that Souther is.
     providers.gradleProperty("southerRepo").orNull?.let { systemProperty("souther.repo", it) }
 }
