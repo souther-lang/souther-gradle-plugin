@@ -43,6 +43,11 @@ public class SoutherPlugin implements Plugin<Project> {
                             + souther.getSoutherVersion().get())));
         });
 
+        // The model this project has, if any. What compileSouther compiles, and what decides
+        // whether this project depends on Souther at all.
+        FileCollection sources = project.fileTree(souther.getSourceDirectory(),
+                tree -> tree.include("**/*.sou"));
+
         SourceSet main = project.getExtensions().getByType(SourceSetContainer.class)
                 .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
         // Held before the generated classes are added to it below. A task is configured lazily, so
@@ -54,8 +59,7 @@ public class SoutherPlugin implements Plugin<Project> {
                     task.setDescription("Compiles the Souther sources of the main source set.");
                     task.setGroup("build");
                     task.getSourceDirectory().set(souther.getSourceDirectory());
-                    task.getSourceFiles().from(project.fileTree(souther.getSourceDirectory(),
-                            tree -> tree.include("**/*.sou")));
+                    task.getSourceFiles().from(sources);
                     task.getToolchain().from(toolchain);
                     task.getCompileClasspath().from(dependencies);
                     task.getLanguage().set(souther.getLanguage());
@@ -88,8 +92,15 @@ public class SoutherPlugin implements Plugin<Project> {
         // The generated code calls the runtime, so a project depends on it whether or not it says
         // so. Which version is not something a project should have to know: it is the one belonging
         // to the Souther that compiled the model.
+        //
+        // Only where there is a model. compileSouther is skipped when no .sou is there and resolves
+        // no toolchain, and the runtime follows the same rule so that the two agree: applying this
+        // plugin across projects that do not all have a model — from a convention plugin, say —
+        // leaves the ones without it resolving no Souther at all. Demanded anyway, it would fail
+        // their compileJava over a model they do not have.
         Provider<String> runtime = souther.getSoutherVersion()
-                .map(it -> "org.souther-lang:souther-runtime:" + it);
+                .map(it -> "org.souther-lang:souther-runtime:" + it)
+                .filter(it -> !sources.isEmpty());
         project.getDependencies().addProvider(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, runtime);
         // And on the API of a library, because a generated type names the runtime in its own
         // signatures: a project consuming this one cannot say what a behavior returns without it.
