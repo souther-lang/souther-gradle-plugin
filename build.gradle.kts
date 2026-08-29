@@ -6,11 +6,11 @@ plugins {
 }
 
 group = "org.souther-lang"
-version = "0.1.1"
+version = "0.2.0"
 
-// The Souther this plugin release is verified against: what a project that names no version gets,
-// and what the tests load. One property, so a default nothing was tested against cannot happen.
-val southerDefaultVersion = "0.1.0"
+// The Souther the tests compile with. It reaches no artifact — a project names the Souther it
+// compiles with, and this plugin names none — so moving it is a decision about these tests.
+val southerTestedVersion = "0.1.0"
 
 repositories {
     mavenCentral()
@@ -33,15 +33,15 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
 
-// So the Souther version this release was verified against is written into the artifact rather than
-// named in the code twice.
-tasks.processResources {
-    // Read into a local first: a closure that reaches out to the script itself cannot be stored in
-    // the configuration cache, and this plugin has no business breaking it in its own build.
-    val version = southerDefaultVersion
-    filesMatching("souther-gradle-plugin.properties") {
-        expand("southerVersion" to version)
-    }
+// The Souther the test projects name, handed over rather than written in each of them. Read into a
+// local first: a closure that reaches out to the script itself cannot be stored in the configuration
+// cache, and this plugin has no business breaking it in its own build.
+tasks.test {
+    val version = southerTestedVersion
+    systemProperty("souther.tested.version", version)
+    // The version reaches a build script the test writes, so a change to it changes what the tests
+    // do. Declared, or Gradle answers `test` up to date after it moves.
+    inputs.property("southerTestedVersion", version)
 }
 
 gradlePlugin {

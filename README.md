@@ -12,13 +12,18 @@ plugin is what replaces that.
 ```kotlin
 plugins {
     java
-    id("org.souther-lang.souther") version "0.1.1"
+    id("org.souther-lang.souther") version "0.2.0"
+}
+
+souther {
+    southerVersion = "0.1.0"
 }
 ```
 
 That is the whole of it. `.sou` under `src/main/souther` is compiled, the generated classes go into
 the jar and onto the test compile class path, and the runtime that generated code calls is added at
-the version of the Souther that compiled the model — so there is no second version to keep in step.
+the version of the Souther that compiled the model — so the version above is the only one, and there
+is no second to keep in step.
 
 Java or Kotlin written beside the model can name it:
 
@@ -62,28 +67,37 @@ java {
 
 ## Choosing a Souther
 
-A plugin release is verified against one Souther, and that is what a project naming no version gets.
-To compile with another:
+A project with a model names the Souther it compiles with:
 
 ```kotlin
 souther {
-    southerVersion = "0.1.0-rc5"
+    southerVersion = "0.1.0"
 }
 ```
+
+There is no default. One would be a Souther chosen by whoever released this plugin, and the next
+Souther release would leave it behind while a build that named nothing went on saying nothing — so a
+project with a model and no version is stopped rather than compiled with a version it never read.
+A project with no `.sou` names nothing and resolves nothing.
+
+For a build that would rather have whatever is newest than say which, `latest.release` is a version
+like any other and Gradle resolves it that way. Written in the build script, so that a build whose
+compiler changes with the calendar says so on the page.
 
 The compiler is not on this plugin's class path. What the version names is
 `org.souther-lang:souther-build-driver`, resolved from the repositories your project already uses
 and run in a worker under `classLoaderIsolation` behind
 [`souther-build-api`](https://github.com/souther-lang/souther-build-api). So the compile meets the
 libraries that Souther was released against rather than the ones Gradle and this plugin happen to
-carry, and the plugin and the Souther it runs are released on their own terms: a Souther release
-needs no plugin release unless the build protocol moves with it.
+carry, and the plugin and the Souther it runs are released on their own terms. This plugin names no
+Souther anywhere, so a release of it is for this plugin or for the build protocol moving, and never
+for a Souther release.
 
 ## Configuration
 
 ```kotlin
 souther {
-    southerVersion = "0.1.0"                            // default: what this release was verified against
+    southerVersion = "0.1.0"                            // no default: a project with a model names it
     sourceDirectory = layout.projectDirectory.dir("model")  // default: src/main/souther
     language = "ja"                                     // default: what a command line naming none gets
 }

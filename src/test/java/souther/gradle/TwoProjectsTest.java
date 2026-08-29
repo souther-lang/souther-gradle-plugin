@@ -26,7 +26,9 @@ class TwoProjectsTest {
         twoProjects(dir, "java", """
                 plugins { java; id("org.souther-lang.souther") }
                 dependencies { implementation(project(":money")) }
-                """);
+
+                %s
+                """.formatted(TestedSouther.block()));
         Files.writeString(dir.resolve("orders/src/main/souther/orders.sou"), """
                 module app.orders exposing ( Order )
 
@@ -105,7 +107,9 @@ class TwoProjectsTest {
         Files.createDirectories(dir.resolve("money/src/main/souther"));
         Files.writeString(dir.resolve("money/build.gradle.kts"), """
                 plugins { `%s`; id("org.souther-lang.souther") }
-                """.formatted(modelPlugins));
+
+                %s
+                """.formatted(modelPlugins, TestedSouther.block()));
         Files.writeString(dir.resolve("money/src/main/souther/money.sou"), """
                 module shared.money exposing ( Amount )
 

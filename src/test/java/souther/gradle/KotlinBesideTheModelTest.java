@@ -49,7 +49,9 @@ class KotlinBesideTheModelTest {
                     sourceCompatibility = JavaVersion.VERSION_24
                     targetCompatibility = JavaVersion.VERSION_24
                 }
-                """.formatted(extraRepository()));
+
+                %s
+                """.formatted(extraRepository(), TestedSouther.block()));
         Path model = Files.createDirectories(dir.resolve("src/main/souther"));
         Files.writeString(model.resolve("money.sou"), """
                 module shared.money exposing ( Amount )

@@ -12,6 +12,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A project that applies the plugin and has no model. Applied across a build from a convention
@@ -58,5 +59,44 @@ class ProjectWithoutAModelTest {
         assertEquals(TaskOutcome.NO_SOURCE, built.task(":compileSouther").getOutcome());
         assertEquals(TaskOutcome.SUCCESS, built.task(":compileJava").getOutcome(),
                 "the Java of a project with no model compiles without a Souther to resolve");
+    }
+
+    /**
+     * And the other side of it: a project that does have a model and names no Souther is stopped,
+     * rather than compiled with one this plugin picked. A version here would be the one whoever
+     * released this plugin was looking at, and every Souther release would leave it further behind
+     * while the build that named nothing went on saying nothing.
+     */
+    @Test
+    void aProjectWithAModelAndNoVersionIsToldToNameOne(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve("settings.gradle.kts"), """
+                rootProject.name = "no-version"
+                """);
+        Files.writeString(dir.resolve("build.gradle.kts"), """
+                plugins {
+                    java
+                    id("org.souther-lang.souther")
+                }
+
+                repositories {
+                    mavenCentral()
+                    mavenLocal()
+                }
+                """);
+        Path model = Files.createDirectories(dir.resolve("src/main/souther"));
+        Files.writeString(model.resolve("money.sou"), """
+                module shared.money exposing ( Amount )
+
+                data Amount = Int
+                """);
+
+        BuildResult failed = GradleRunner.create()
+                .withProjectDir(dir.toFile())
+                .withPluginClasspath()
+                .withArguments("compileSouther")
+                .buildAndFail();
+
+        assertTrue(failed.getOutput().contains("southerVersion"), failed.getOutput());
+        assertTrue(failed.getOutput().contains("names no Souther"), failed.getOutput());
     }
 }
