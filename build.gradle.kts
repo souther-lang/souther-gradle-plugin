@@ -6,11 +6,11 @@ plugins {
 }
 
 group = "org.souther-lang"
-version = "0.1.0"
+version = "0.1.1"
 
 // The Souther this plugin release is verified against: what a project that names no version gets,
 // and what the tests load. One property, so a default nothing was tested against cannot happen.
-val southerDefaultVersion = "0.1.0-rc5"
+val southerDefaultVersion = "0.1.0"
 
 repositories {
     mavenCentral()
