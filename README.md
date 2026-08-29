@@ -12,7 +12,7 @@ plugin is what replaces that.
 ```kotlin
 plugins {
     java
-    id("org.souther-lang.souther") version "0.1.0"
+    id("org.souther-lang.souther") version "0.1.1"
 }
 ```
 
@@ -83,7 +83,7 @@ needs no plugin release unless the build protocol moves with it.
 
 ```kotlin
 souther {
-    southerVersion = "0.1.0-rc5"                        // default: what this release was verified against
+    southerVersion = "0.1.0"                            // default: what this release was verified against
     sourceDirectory = layout.projectDirectory.dir("model")  // default: src/main/souther
     language = "ja"                                     // default: what a command line naming none gets
 }
