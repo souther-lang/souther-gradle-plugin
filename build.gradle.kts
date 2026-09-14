@@ -10,7 +10,7 @@ version = "0.2.0"
 
 // The Souther the tests compile with. It reaches no artifact — a project names the Souther it
 // compiles with, and this plugin names none — so moving it is a decision about these tests.
-val southerTestedVersion = "0.1.0"
+val southerTestedVersion = "0.2.0"
 
 repositories {
     mavenCentral()

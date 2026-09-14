@@ -16,7 +16,7 @@ plugins {
 }
 
 souther {
-    southerVersion = "0.1.0"
+    southerVersion = "0.2.0"
 }
 ```
 
@@ -71,7 +71,7 @@ A project with a model names the Souther it compiles with:
 
 ```kotlin
 souther {
-    southerVersion = "0.1.0"
+    southerVersion = "0.2.0"
 }
 ```
 
@@ -97,7 +97,7 @@ for a Souther release.
 
 ```kotlin
 souther {
-    southerVersion = "0.1.0"                            // no default: a project with a model names it
+    southerVersion = "0.2.0"                            // no default: a project with a model names it
     sourceDirectory = layout.projectDirectory.dir("model")  // default: src/main/souther
     language = "ja"                                     // default: what a command line naming none gets
 }
