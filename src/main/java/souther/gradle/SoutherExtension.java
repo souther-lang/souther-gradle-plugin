@@ -7,9 +7,10 @@ import org.gradle.api.provider.Property;
 public abstract class SoutherExtension {
 
     /**
-     * The Souther to compile with. Unset is the one this plugin release was verified against, so a
-     * project that is happy with that names no version at all — and one that wants a newer Souther
-     * says so without waiting for a plugin release.
+     * The Souther to compile with, which a project that has a model names. There is no default: a
+     * version here would be one this plugin's release chose, and it would name an older Souther the
+     * day after the next one came out. {@code latest.release} is a version like any other, for a
+     * build that would rather have whatever is newest than say which.
      */
     public abstract Property<String> getSoutherVersion();
 

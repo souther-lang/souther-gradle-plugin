@@ -29,7 +29,6 @@ public class SoutherPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.getPluginManager().apply(JavaPlugin.class);
         SoutherExtension souther = project.getExtensions().create("souther", SoutherExtension.class);
-        souther.getSoutherVersion().convention(SoutherRelease.verified());
         souther.getSourceDirectory().convention(
                 project.getLayout().getProjectDirectory().dir("src/main/souther"));
 
@@ -39,9 +38,16 @@ public class SoutherPlugin implements Plugin<Project> {
             it.setDescription("The Souther that compiles this project's .sou.");
             // As a default dependency, so the version is read when the configuration is resolved
             // rather than while the build script is still being written.
-            it.defaultDependencies(dependencies -> dependencies.add(project.getDependencies()
-                    .create("org.souther-lang:souther-build-driver:"
-                            + souther.getSoutherVersion().get())));
+            // Only where the project named one. A project that named none and has a model is
+            // refused by compileSouther, which is the one place that knows there is a model to
+            // compile; here the answer has to be that there is nothing to resolve.
+            it.defaultDependencies(dependencies -> {
+                String version = souther.getSoutherVersion().getOrNull();
+                if (version != null && !version.isBlank()) {
+                    dependencies.add(project.getDependencies()
+                            .create("org.souther-lang:souther-build-driver:" + version));
+                }
+            });
         });
 
         SourceSet main = project.getExtensions().getByType(SourceSetContainer.class)
@@ -72,6 +78,7 @@ public class SoutherPlugin implements Plugin<Project> {
                     task.getToolchain().from(toolchain);
                     task.getCompileClasspath().from(dependencies);
                     task.getLanguage().set(souther.getLanguage());
+                    task.getSoutherVersion().set(souther.getSoutherVersion());
                     task.getOutputDirectory().set(
                             project.getLayout().getBuildDirectory().dir("classes/souther/main"));
                     // Not build/tmp/compileSouther: that is what Task.getTemporaryDir() hands out
@@ -118,4 +125,5 @@ public class SoutherPlugin implements Plugin<Project> {
         project.getPluginManager().withPlugin("java-library", applied ->
                 project.getDependencies().addProvider(JavaPlugin.API_CONFIGURATION_NAME, runtime));
     }
+
 }

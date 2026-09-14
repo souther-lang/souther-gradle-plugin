@@ -192,7 +192,9 @@ class SoutherPluginFunctionalTest {
                     mavenLocal()
                     %s
                 }
-                """.formatted(extraRepository()));
+
+                %s
+                """.formatted(extraRepository(), TestedSouther.block()));
         Path sources = Files.createDirectories(dir.resolve("src/main/souther"));
         Files.writeString(sources.resolve("money.sou"), """
                 module shared.money exposing ( Amount )

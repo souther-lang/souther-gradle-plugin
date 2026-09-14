@@ -1,6 +1,7 @@
 package souther.gradle;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.DirectoryProperty;
@@ -62,11 +63,32 @@ public abstract class SoutherCompile extends DefaultTask {
     @Optional
     public abstract Property<String> getLanguage();
 
+    /**
+     * The Souther the project named, or nothing where it named none.
+     *
+     * <p>Asked for here rather than where the toolchain's dependency is declared: that is read while
+     * the task graph is built, for every project the plugin is applied to, and a project with no
+     * model is one this task is skipped for. Refusing there would refuse them too.
+     */
+    @Input
+    @Optional
+    public abstract Property<String> getSoutherVersion();
+
     @Inject
     protected abstract WorkerExecutor getWorkerExecutor();
 
     @TaskAction
     void compile() {
+        if (!getSoutherVersion().isPresent()) {
+            throw new InvalidUserDataException("this project compiles a Souther model and names no "
+                    + "Souther to compile it with. Write it in the build script:\n\n"
+                    + "    souther {\n"
+                    + "        southerVersion = \"<version>\"\n"
+                    + "    }\n\n"
+                    + "This plugin states no version of its own, so that a Souther release cannot "
+                    + "leave one here to go stale. `latest.release` is a version too, for a build "
+                    + "that wants whatever is newest.");
+        }
         // Class-loader isolation, so the compiler runs against the libraries the Souther release
         // was built with rather than the ones Gradle and this plugin happen to carry.
         WorkQueue queue = getWorkerExecutor()
